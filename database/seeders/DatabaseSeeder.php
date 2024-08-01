@@ -15,11 +15,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(DivisiSeeder::class);
+        $this->call(DepartmentSeeder::class);
         User::create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
+            'department_id' => 1,
         ]);
 
         User::create([
@@ -27,6 +30,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'user@gmail.com',
             'password' => Hash::make('password'),
             'role' => 'user',
+            'department_id' => 2,
         ]);
     }
 }
