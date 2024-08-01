@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(DivisiSeeder::class);
         $this->call(DepartmentSeeder::class);
+        $this->call(CategorySeeder::class);
         User::create([
             'name' => 'admin',
             'email' => 'admin@gmail.com',
@@ -26,11 +27,36 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
+            'name' => 'hendra',
+            'email' => 'hendra@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'department_id' => 10,
+        ]);
+
+        User::create([
+            'name' => 'ijadin',
+            'email' => 'ijadin@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'department_id' => 16,
+        ]);
+
+        User::create([
             'name' => 'user',
             'email' => 'user@gmail.com',
             'password' => Hash::make('password'),
             'role' => 'user',
-            'department_id' => 2,
+            'department_id' => 12,
         ]);
+        User::create([
+            'name' => 'bambang',
+            'email' => 'bambang@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'user',
+            'department_id' => 21,
+        ]);
+
+        $this->call(BarangSeeder::class);
     }
 }

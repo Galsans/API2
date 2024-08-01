@@ -21,6 +21,7 @@ class AuthController extends Controller
                 'msg' => $validate->errors()
             ], 422);
         }
+        $input = $request->all();
         $input['password'] = Hash::make($request->password);
         $user = User::create($input);
 
@@ -43,16 +44,17 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('email', $request->email);
+        $user = User::where('email', $request->email)->first();
+
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'msg' => 'credential tidak cocok'
+                'msg' => 'credential salah'
             ], 203);
         }
 
         return response()->json([
             'msg' => 'anda berhasil login',
-            'data' => $user,
+            'akun' => $user,
             'token' => $user->createToken('apiToken')->plainTextToken
         ], 200);
     }
@@ -62,6 +64,14 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json([
             'msg' => 'anda berhasil logout'
+        ], 200);
+    }
+
+    public function readUser()
+    {
+        $user = User::with('department.divisi')->get();
+        return response()->json([
+            'data' => $user
         ], 200);
     }
 }
