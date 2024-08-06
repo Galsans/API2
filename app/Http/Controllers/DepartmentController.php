@@ -13,7 +13,7 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        $department = Department::paginate(10);
+        $department = Department::with('divisi')->paginate(10);
         if ($department->isEmpty()) {
             return response()->json([
                 'msg' => 'data belum ada'
@@ -96,15 +96,30 @@ class DepartmentController extends Controller
      */
     public function destroy(string $id)
     {
-        $department = Department::find($id);
+        // Cari barang berdasarkan ID
+        $barang = Department::find($id);
 
-        if ($department == null) {
+        if ($barang === null) {
             return response()->json([
-                'msg' => 'data tidak ditemukan',
+                'msg' => 'Data tidak ditemukan'
             ], 404);
         }
+
+        // Cek apakah barang terhubung dengan tabel lain
+        // Misalnya, kita cek tabel `request` yang mungkin memiliki kolom `department_id`
+        // Sesuaikan dengan relasi yang ada di aplikasi Anda
+
+        if ($barang->user()->exists()) {  // Ganti `divisi()` dengan relasi yang sesuai
+            return response()->json([
+                'msg' => 'Data tidak dapat dihapus karena ada relasi dengan tabel lain'
+            ], 400);  // 400 Bad Request lebih tepat untuk kondisi ini
+        }
+
+        // Hapus barang
+        $barang->delete();
+
         return response()->json([
-            'msg' => 'data berhasil dihapus'
+            'msg' => 'Data berhasil dihapus'
         ], 200);
     }
 }

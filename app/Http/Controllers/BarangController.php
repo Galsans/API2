@@ -21,7 +21,7 @@ class BarangController extends Controller
      */
     public function index()
     {
-        $barang = Barang::with(['category', 'user.department'])->get();
+        $barang = Barang::with(['category', 'user'])->get();
 
         if ($barang->isEmpty()) {
             return response()->json([
@@ -163,15 +163,16 @@ class BarangController extends Controller
      */
     public function show(string $id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $barang = Barang::with(['category', 'user.department.divisi'])->find($id);
+        if ($barang == null) {
+            return response()->json([
+                'msg' => 'data tidak ditemukan'
+            ], 404);
+        }
+        return response()->json([
+            'msg' => 'detail barang',
+            'data' => $barang
+        ], 200);
     }
 
     /**
@@ -179,7 +180,72 @@ class BarangController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validate = Validator::make($request->all(), [
+            "category_id" => 'exists:categories,id',
+            "user_id" => 'exists:users,id',
+            "date_barang_masuk" => 'date',
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'msg' => $validate->errors()
+            ], 422);
+        }
+
+        $barang = Barang::find($id);
+
+        if (!$barang) {
+            return response()->json(['msg' => 'Barang tidak ditemukan'], 404);
+        }
+
+        // Ambil data divisi dan category jika ada perubahan
+        $user = $request->has('user_id') ? User::find($request->user_id) : User::find($barang->user_id);
+        $category = $request->has('category_id') ? Category::find($request->category_id) : Category::find($barang->category_id);
+
+        // Periksa apakah user dan kategori ditemukan
+        if (!$user) {
+            return response()->json(['msg' => 'User tidak ditemukan'], 404);
+        }
+
+        if (!$category) {
+            return response()->json(['msg' => 'Kategori tidak ditemukan'], 404);
+        }
+
+        // Buat kode asset_id baru jika ada perubahan di user_id atau category_id
+        $updateAssetId = false;
+        if ($request->has('user_id') || $request->has('category_id')) {
+            // Buat kode asset_id baru
+            $divisionCode = $user->department->divisi->kode;
+            $categoryCode = $category->kode;
+
+            // Hitung nomor urut barang
+            $itemCount = Barang::count() + 1;
+            $sequenceNumber = str_pad($itemCount, 3, '0', STR_PAD_LEFT);
+
+            // Ambil bulan dan tahun dari date_barang_masuk
+            $date = $request->has('date_barang_masuk') ? new \DateTime($request->date_barang_masuk) : new \DateTime($barang->date_barang_masuk);
+            $dateCode = $date->format('m') . $date->format('y');
+
+            // Gabungkan untuk membuat asset_id
+            $asset_id = $divisionCode . $categoryCode . $sequenceNumber . $dateCode;
+
+            // Set asset_id baru
+            $barang->asset_id = $asset_id;
+            $updateAssetId = true;
+        }
+
+        // Update record dengan input baru
+        $input = $request->all();
+        if ($updateAssetId) {
+            $input['asset_id'] = $barang->asset_id;
+        }
+
+        $barang->update($input);
+
+        return response()->json([
+            'msg' => 'Data berhasil diubah',
+            'data' => $barang
+        ], 200);
     }
 
     /**
@@ -187,6 +253,30 @@ class BarangController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // Cari barang berdasarkan ID
+        $barang = Barang::find($id);
+
+        if ($barang === null) {
+            return response()->json([
+                'msg' => 'Data tidak ditemukan'
+            ], 404);
+        }
+
+        // Cek apakah barang terhubung dengan tabel lain
+        // Misalnya, kita cek tabel `request` yang mungkin memiliki kolom `department_id`
+        // Sesuaikan dengan relasi yang ada di aplikasi Anda
+
+        // if ($barang->history()->exists()) {  // Ganti `divisi()` dengan relasi yang sesuai
+        //     return response()->json([
+        //         'msg' => 'Data tidak dapat dihapus karena ada relasi dengan tabel lain'
+        //     ], 400);  // 400 Bad Request lebih tepat untuk kondisi ini
+        // }
+
+        // Hapus barang
+        $barang->delete();
+
+        return response()->json([
+            'msg' => 'Data berhasil dihapus'
+        ], 200);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -34,29 +35,19 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $validate = Validator::make($request->all(), [
-            'email' => 'required',
-            'password' => 'required',
-        ]);
-        if ($validate->fails()) {
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            // Return user details and token
             return response()->json([
-                'msg' => $validate->errors()
-            ], 422);
+                'token' => $user->createToken('apiToken')->plainTextToken,
+                'user' => $user // Include user details with role
+            ]);
         }
 
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'msg' => 'credential salah'
-            ], 203);
-        }
-
-        return response()->json([
-            'msg' => 'anda berhasil login',
-            'akun' => $user,
-            'token' => $user->createToken('apiToken')->plainTextToken
-        ], 200);
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
     public function logout(Request $request)
@@ -71,6 +62,15 @@ class AuthController extends Controller
     {
         $user = User::with('department.divisi')->get();
         return response()->json([
+            'data' => $user
+        ], 200);
+    }
+
+    public function user()
+    {
+        $user = Auth::user();
+        return response()->json([
+            'msg' => 'sudah login',
             'data' => $user
         ], 200);
     }
