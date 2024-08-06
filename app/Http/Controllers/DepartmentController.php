@@ -59,15 +59,15 @@ class DepartmentController extends Controller
      */
     public function show(string $id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $department = Department::find($id);
+        if ($department == null) {
+            return response()->json([
+                'msg' => 'data tidak ditemukan'
+            ], 404);
+        }
+        return response()->json([
+            'data' => $department
+        ], 200);
     }
 
     /**
@@ -120,6 +120,20 @@ class DepartmentController extends Controller
 
         return response()->json([
             'msg' => 'Data berhasil dihapus'
+        ], 200);
+    }
+
+    public function trash()
+    {
+        $department = Department::onlyTrashed()->get();
+        if ($department->isEmpty()) {
+            return response()->json([
+                'msg' => 'data tidak ada'
+            ], 404);
+        }
+        return response()->json([
+            'msg' => 'data history delete',
+            'data' => $department
         ], 200);
     }
 }
