@@ -117,8 +117,8 @@ class BarangController extends Controller
         $barang->save(); // Simpan barang terlebih dahulu untuk mendapatkan ID
 
         // Buat data QR Code setelah barang disimpan dan mendapatkan ID
-        $qrCodeData = url('/api/barang/' . $barang->id); // Gunakan URL lengkap
-        // $qrCodeData = 'http://192.168.1.20/api/barang/' . $barang->id;
+        // $qrCodeData = url('/api/barang/' . $barang->id); // Gunakan URL lengkap
+        $qrCodeData = 'http://localhost:5173/barang/' . $barang->id;
         $qrCodePath = 'qrcodes/' . "barcode" . $barang->id . '.svg';
 
         // Menyimpan svg qrcode dengan Storage di folder public

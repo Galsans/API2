@@ -71,7 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // ROUTE BARANG
         Route::get('barang', [BarangController::class, 'index']);
         Route::get('barang/{id}', [BarangController::class, 'show']);
-        Route::post('barang', [BarangController::class, 'store']);
+        // Route::post('barang', [BarangController::class, 'store']);
         Route::put('barang', [BarangController::class, 'update']);
         Route::delete('barang', [BarangController::class, 'destroy']);
 
@@ -81,3 +81,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('history/{id}', [HistoryController::class, 'destroy']);
     });
 });
+
+Route::post('barang', [BarangController::class, 'store']);

@@ -36,6 +36,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all of the makeRequest for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function makeRequest()
+    {
+        return $this->hasMany(MakeRequest::class);
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var array<int, string>
