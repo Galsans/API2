@@ -7,6 +7,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\MakeRequestController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ROUTE AUTHENTIKASI
-Route::post('register', [AuthController::class, 'register']);
+// Route::post('register', [AuthController::class, 'register']); -> opsi jika ingin digunakan
 Route::post('login', [AuthController::class, 'login']);
 
 // ROUTE AUTHORIZATION
@@ -30,13 +31,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
 
     Route::middleware('user')->group(function () {
-        // ROUTE MAKEREQUEST
+        // ROUTE MAKEREQUEST FOR USER
         Route::delete('makeRequest/{id}', [MakeRequestController::class, 'delete']);
         Route::get('makeRequest', [MakeRequestController::class, 'index']);
         Route::post('makeRequest/{barangId}', [MakeRequestController::class, 'store']);
     });
 
     Route::middleware('admin')->group(function () {
+        // MR FOR ADMIN
+        Route::put('makeRequest/{id}', [MakeRequestController::class, 'updateAdmin']);
+
+        // READ USER FOR ADMIN
+        Route::get('readUser', [UserController::class, 'readUser']);
+        // Create, Update USER For ADMIN
+        Route::post('user', [UserController::class, 'store']);
+        Route::put('user/{id}', [UserController::class, 'update']);
+
         // ROUTE DEPARTMENT
         Route::get('department', [DepartmentController::class, 'index']);
         Route::get('department/{id}', [DepartmentController::class, 'show']);
@@ -51,18 +61,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('divisi', [DivisiController::class, 'update']);
         Route::delete('divisi', [DivisiController::class, 'destroy']);
 
-        Route::put('makeRequest/{id}', [MakeRequestController::class, 'updateAdmin']);
-
-        Route::get('readUser', [AuthController::class, 'readUser']);
-
-
         // ROUTE CATEGORY
         Route::get('category', [CategoryController::class, 'index']);
         Route::get('category/{id}', [CategoryController::class, 'show']);
         Route::post('category', [CategoryController::class, 'store']);
         Route::put('category', [CategoryController::class, 'update']);
         Route::delete('category', [CategoryController::class, 'destroy']);
-
 
         // ROUTE BARANG
         Route::get('barang', [BarangController::class, 'index']);
@@ -73,7 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // ROUTE HISTORY
         Route::get('history/{barang_id}', [HistoryController::class, 'index']);
-        Route::post('history/{barang_id', [HistoryController::class, 'store']);
+        Route::post('history/{barang_id}', [HistoryController::class, 'store']);
         Route::delete('history/{id}', [HistoryController::class, 'destroy']);
     });
 });

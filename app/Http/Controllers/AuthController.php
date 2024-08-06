@@ -58,14 +58,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function readUser()
-    {
-        $user = User::with('department.divisi')->get();
-        return response()->json([
-            'data' => $user
-        ], 200);
-    }
-
     public function user()
     {
         $user = Auth::user();
