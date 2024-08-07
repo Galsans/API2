@@ -148,4 +148,35 @@ class DivisiController extends Controller
             'msg' => 'Data berhasil dihapus'
         ], 200);
     }
+
+    public function restore($id)
+    {
+        $divisi = Divisi::withTrashed()->find($id);
+
+        if ($divisi) {
+            $divisi->restore();
+            return response()->json([
+                'msg' => 'Divisi berhasil dikembalikan',
+                'data' => $divisi
+            ], 200);
+        } else {
+            return response()->json([
+                'msg' => 'Divisi tidak ditemukan',
+            ], 404);
+        }
+    }
+
+    public function trash()
+    {
+        $divisi = Divisi::onlyTrashed()->get();
+        if ($divisi->isEmpty()) {
+            return response()->json([
+                'msg' => 'data tidak ada'
+            ], 404);
+        }
+        return response()->json([
+            'msg' => 'data history delete',
+            'data' => $divisi
+        ], 200);
+    }
 }

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Barang;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class BarangSeeder extends Seeder
@@ -15,7 +14,7 @@ class BarangSeeder extends Seeder
     {
         Barang::create([
             "brand" => "asus",
-            "asset_id" => "REDMN0010820",
+            "asset_kode" => "REDMN0010820",
             "user_id" => 1,
             "category_id" => 2,
             "type_monitor" => "acer",
@@ -29,7 +28,7 @@ class BarangSeeder extends Seeder
         ]);
         Barang::create([
             "brand" => "asus",
-            "asset_id" => "ARMPR0020820",
+            "asset_kode" => "ARMPR0020820",
             "user_id" => 2,
             "category_id" => 4,
             "type_monitor" => "acer",
@@ -44,8 +43,7 @@ class BarangSeeder extends Seeder
 
         Barang::create([
             "brand" => "asus",
-            "asset_id" => "KAPMK0030820",
-            "user_id" => 3,
+            "asset_kode" => "KAPMK0030820",
             "category_id" => 5,
             "type_monitor" => "acer",
             "status" => "rusak",
@@ -59,11 +57,11 @@ class BarangSeeder extends Seeder
 
         Barang::create([
             "brand" => "asus",
-            "asset_id" => "HGIIM0070820",
+            "asset_kode" => "HGIIM0070820",
             "user_id" => 4,
             "category_id" => 6,
             "type_monitor" => "acer",
-            "status" => "in service",
+            "status" => "rusak",
             "unit_device" => "monitor",
             "date_barang_masuk" => "2020-08-12",
             "qrcode" => "/storage/qrcodes/barcode4.svg",
@@ -73,7 +71,7 @@ class BarangSeeder extends Seeder
         ]);
         Barang::create([
             "brand" => "asus",
-            "asset_id" => "SNMSV0080920",
+            "asset_kode" => "SNMSV0080920",
             "user_id" => 5,
             "category_id" => 8,
             "type_monitor" => "acer",

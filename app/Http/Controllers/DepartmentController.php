@@ -26,14 +26,6 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -109,7 +101,7 @@ class DepartmentController extends Controller
         // Misalnya, kita cek tabel `request` yang mungkin memiliki kolom `department_id`
         // Sesuaikan dengan relasi yang ada di aplikasi Anda
 
-        if ($barang->user()->exists()) {  // Ganti `divisi()` dengan relasi yang sesuai
+        if ($barang->user()->exists()) {  // Ganti `user()` dengan relasi yang sesuai
             return response()->json([
                 'msg' => 'Data tidak dapat dihapus karena ada relasi dengan tabel lain'
             ], 400);  // 400 Bad Request lebih tepat untuk kondisi ini
@@ -135,5 +127,22 @@ class DepartmentController extends Controller
             'msg' => 'data history delete',
             'data' => $department
         ], 200);
+    }
+
+    public function restore($id)
+    {
+        $department = Department::withTrashed()->find($id);
+
+        if ($department) {
+            $department->restore();
+            return response()->json([
+                'msg' => 'Department berhasil dikembalikan',
+                'data' => $department
+            ], 200);
+        } else {
+            return response()->json([
+                'msg' => 'Department tidak ditemukan',
+            ], 404);
+        }
     }
 }

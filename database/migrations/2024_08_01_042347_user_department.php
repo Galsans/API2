@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('department_id')->references('id')->on('departments')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

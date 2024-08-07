@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\Category;
-use App\Models\Divisi;
 use App\Models\User;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -17,7 +16,9 @@ use Illuminate\Support\Facades\Validator;
 class BarangController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * FUNGSI UTNUK MELIHAT DATA BARANG BESERTA DENGAN RELASI DARI BARANG YANG TERHUBUNG
+     * RELASI YANG TERLIHAT ADALAH CATEGORY DAN USER SESUAI DENGAN DATA BARANG NYA
+     * barang sudah otomatis tampil sesuai dengan prioritas nya dengan sort by status
      */
     public function index()
     {
@@ -51,7 +52,9 @@ class BarangController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * FUNGSI UNTUK MENAMBAHKAN DATA BARANG
+     * asset_kode akan terisi secara otomatis jika user_id, category_id dan date_barang_masuk sudah diinputkan
+     * qrcode menggunakan library dari BaconQrCode base on url dari frontend
      */
     public function store(Request $request)
     {
@@ -85,7 +88,7 @@ class BarangController extends Controller
             return response()->json(['msg' => 'Category tidak ditemukan'], 404);
         }
 
-        // Buat kode asset_id
+        // Buat kode asset_kode
         $divisionCode = $user->department->divisi->kode;
         $categoryCode = $category->kode;
 
@@ -97,13 +100,13 @@ class BarangController extends Controller
         $date = new \DateTime($request->date_barang_masuk);
         $dateCode = $date->format('m') . $date->format('y');
 
-        // Gabungkan untuk membuat asset_id
-        $asset_id = $divisionCode . $categoryCode . $sequenceNumber . $dateCode;
+        // Gabungkan untuk membuat asset_kode
+        $asset_kode = $divisionCode . $categoryCode . $sequenceNumber . $dateCode;
 
         // Buat record baru di tabel barang
         $input = $request->all();
         $barang = new Barang();
-        $barang->asset_id = $asset_id;
+        $barang->asset_kode = $asset_kode;
         $barang->category_id = $input['category_id'];
         $barang->user_id = $input['user_id'];
         $barang->type_monitor = $input['type_monitor'];
@@ -176,13 +179,16 @@ class BarangController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * update untuk barang
+     * jika status yang dipilih adalah rusak maka user_id otomatis akan bernilai null
+     * jika category_id, user_id dan date_barang_masuk di ubah maka asset_kode akan berubah juga
      */
     public function update(Request $request, string $id)
     {
         $validate = Validator::make($request->all(), [
             "category_id" => 'exists:categories,id',
-            "user_id" => 'exists:users,id',
+            // "user_id" => $request->status !== 'rusak' ? 'required|exists:users,id' : 'nullable|exists:users,id',
+            "user_id" => 'nullable|exists:users,id',
             "date_barang_masuk" => 'date',
         ]);
 
@@ -198,24 +204,24 @@ class BarangController extends Controller
             return response()->json(['msg' => 'Barang tidak ditemukan'], 404);
         }
 
-        // Ambil data divisi dan category jika ada perubahan
+        // Ambil data divisi dan kategori jika ada perubahan
         $user = $request->has('user_id') ? User::find($request->user_id) : User::find($barang->user_id);
         $category = $request->has('category_id') ? Category::find($request->category_id) : Category::find($barang->category_id);
 
         // Periksa apakah user dan kategori ditemukan
-        if (!$user) {
+        if (!$user && $request->has('user_id')) {
             return response()->json(['msg' => 'User tidak ditemukan'], 404);
         }
 
-        if (!$category) {
+        if (!$category && $request->has('category_id')) {
             return response()->json(['msg' => 'Kategori tidak ditemukan'], 404);
         }
 
-        // Buat kode asset_id baru jika ada perubahan di user_id atau category_id
+        // Buat kode asset_kode baru jika ada perubahan di user_id atau category_id
         $updateAssetId = false;
         if ($request->has('user_id') || $request->has('category_id')) {
-            // Buat kode asset_id baru
-            $divisionCode = $user->department->divisi->kode;
+            // Buat kode asset_kode baru
+            $divisionCode = $user ? $user->department->divisi->kode : $barang->user->department->divisi->kode;
             $categoryCode = $category->kode;
 
             // Hitung nomor urut barang
@@ -226,18 +232,23 @@ class BarangController extends Controller
             $date = $request->has('date_barang_masuk') ? new \DateTime($request->date_barang_masuk) : new \DateTime($barang->date_barang_masuk);
             $dateCode = $date->format('m') . $date->format('y');
 
-            // Gabungkan untuk membuat asset_id
-            $asset_id = $divisionCode . $categoryCode . $sequenceNumber . $dateCode;
+            // Gabungkan untuk membuat asset_kode
+            $asset_kode = $divisionCode . $categoryCode . $sequenceNumber . $dateCode;
 
-            // Set asset_id baru
-            $barang->asset_id = $asset_id;
+            // Set asset_kode baru
+            $barang->asset_kode = $asset_kode;
             $updateAssetId = true;
+        }
+
+        // Jika status menjadi rusak, set user_id menjadi null
+        if ($request->has('status') && $request->status === 'rusak') {
+            $request->merge(['user_id' => null]);
         }
 
         // Update record dengan input baru
         $input = $request->all();
         if ($updateAssetId) {
-            $input['asset_id'] = $barang->asset_id;
+            $input['asset_kode'] = $barang->asset_kode;
         }
 
         $barang->update($input);
@@ -245,11 +256,11 @@ class BarangController extends Controller
         return response()->json([
             'msg' => 'Data berhasil diubah',
             'data' => $barang
-        ], 200);
+        ], 201);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * FUNGSI DELETE TIDAK PERMANENT
      */
     public function destroy(string $id)
     {
@@ -265,18 +276,49 @@ class BarangController extends Controller
         // Cek apakah barang terhubung dengan tabel lain
         // Misalnya, kita cek tabel `request` yang mungkin memiliki kolom `department_id`
         // Sesuaikan dengan relasi yang ada di aplikasi Anda
-
-        // if ($barang->history()->exists()) {  // Ganti `divisi()` dengan relasi yang sesuai
-        //     return response()->json([
-        //         'msg' => 'Data tidak dapat dihapus karena ada relasi dengan tabel lain'
-        //     ], 400);  // 400 Bad Request lebih tepat untuk kondisi ini
-        // }
+        if ($barang->history()->exists()) {  // Ganti `divisi()` dengan relasi yang sesuai
+            return response()->json([
+                'msg' => 'Data tidak dapat dihapus karena ada relasi dengan tabel lain'
+            ], 400);  // 400 Bad Request lebih tepat untuk kondisi ini
+        }
 
         // Hapus barang
         $barang->delete();
 
         return response()->json([
             'msg' => 'Data berhasil dihapus'
+        ], 200);
+    }
+    // Fungsi untuk mengembalikan data yang sudah di hapus
+    public function restore($id)
+    {
+        $barang = Barang::withTrashed()->find($id);
+
+        if ($barang) {
+            $barang->restore();
+            return response()->json([
+                'msg' => 'Barang berhasil dikembalikan',
+                'data' => $barang
+            ], 200);
+        } else {
+            return response()->json([
+                'msg' => 'Barang tidak ditemukan',
+            ], 404);
+        }
+    }
+
+    // Melihat data yang sudah dihapus
+    public function trash()
+    {
+        $barang = Barang::onlyTrashed()->get();
+        if ($barang->isEmpty()) {
+            return response()->json([
+                'msg' => 'data tidak ada'
+            ], 404);
+        }
+        return response()->json([
+            'msg' => 'data history delete',
+            'data' => $barang
         ], 200);
     }
 }

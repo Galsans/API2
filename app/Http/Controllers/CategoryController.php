@@ -110,4 +110,35 @@ class CategoryController extends Controller
             'data' => $category
         ], 200);
     }
+
+    public function restore($id)
+    {
+        $category = Category::withTrashed()->find($id);
+
+        if ($category) {
+            $category->restore();
+            return response()->json([
+                'msg' => 'Category berhasil dikembalikan',
+                'data' => $category
+            ], 200);
+        } else {
+            return response()->json([
+                'msg' => 'Category tidak ditemukan',
+            ], 404);
+        }
+    }
+
+    public function trash()
+    {
+        $category = Category::onlyTrashed()->get();
+        if ($category->isEmpty()) {
+            return response()->json([
+                'msg' => 'data tidak ada'
+            ], 404);
+        }
+        return response()->json([
+            'msg' => 'data history delete',
+            'data' => $category
+        ], 200);
+    }
 }

@@ -26,4 +26,14 @@ class Barang extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Get all of the history for the Barang
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function history()
+    {
+        return $this->hasMany(History::class);
+    }
 }

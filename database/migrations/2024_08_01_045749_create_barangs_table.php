@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('barangs', function (Blueprint $table) {
             $table->id();
             $table->string('brand')->nullable();
-            $table->string('asset_id')->unique();
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('asset_kode')->unique();
+            $table->foreignId('user_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->foreignId('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->string('type_monitor')->nullable();
             $table->enum('status', ['in use', 'out', 'in service', 'rusak']);

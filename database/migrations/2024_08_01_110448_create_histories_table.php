@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('barang_id')->references('id')->on('barangs')->onDelete('cascade');
-            $table->foreignId('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->references('id')->on('users')->onDelete('cascade');
             $table->enum('status', ['in use', 'out', 'in service', 'upgrade', 'rusak']);
             $table->text('spek_upgraded')->nullable();
             $table->text('lokasi');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

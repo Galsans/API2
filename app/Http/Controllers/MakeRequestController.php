@@ -76,6 +76,37 @@ class MakeRequestController extends Controller
         ], 201);
     }
 
+    public function readMakeRequestAdmin(Request $request)
+    {
+        $makeRequest = MakeRequest::with(['user', 'barang'])->get();
+
+        if ($makeRequest->isEmpty()) {
+            return response()->json([
+                'msg' => 'data belum ada'
+            ], 404);
+        }
+
+        // Urutkan makereq$makeRequest berdasarkan status_penggunaan
+        $makeRequest = $makeRequest->sortBy(function ($item) {
+            switch ($item->status) {
+                case 'pending':
+                    return 1;
+                case 'in prosess':
+                    return 2;
+                case 'done':
+                    return 3;
+                case 'reject':
+                    return 4;
+                default:
+                    return 5; // Jaga-jaga jika ada status lain yang tidak terduga
+            }
+        });
+
+        return response()->json([
+            'data' => $makeRequest->values()->all()
+        ], 200);
+    }
+
     public function updateAdmin(Request $request, $id)
     {
         $validate = Validator::make($request->all(), [

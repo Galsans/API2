@@ -4,19 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+    // FUNGSI UNTUK MELIHAT SEMUA DATA USER UNTUK ADMIN
     public function readUser()
     {
         $user = User::with('department.divisi')->get();
+        if ($user->isEmpty()) {
+            return response()->json([
+                'msg' => 'data tidak ada',
+            ], 404);
+        }
         return response()->json([
             'data' => $user
         ], 200);
     }
 
+    // FUNGSI UNTUK MENYIMPAN DATA USER UNTUK ADMIN
     public function store(Request $request)
     {
         $validasi = Validator::make($request->all(), [
@@ -41,6 +49,7 @@ class UserController extends Controller
         ], 201);
     }
 
+    // FUNGSI UNTUK UPDATE DATA USER UNTUK ADMIN
     public function update(Request $request, $id)
     {
         $validasi = Validator::make($request->all(), [
